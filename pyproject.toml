@@ -18,6 +18,3 @@ gunicorn = "^21.2.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-app = "page_analyzer:app"
