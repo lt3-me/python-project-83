@@ -1,5 +1,3 @@
-# from . import app as app_
+from app import app
 
-
-def app():
-    print('Hello, world!')
+__all__ = ['app']
