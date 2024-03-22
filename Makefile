@@ -25,7 +25,7 @@ test-coverage:
 	poetry run python3 -m pytest --cov=page_analyzer --cov-report=xml
 
 build:
-	poetry build
+	./build.sh
 
 publish:
 	poetry publish --dry-run
