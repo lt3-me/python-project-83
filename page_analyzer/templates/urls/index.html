@@ -16,7 +16,7 @@
       {% for url in urls_data %}
       <tr>
         <td>{{ url[0] }}</td>
-        <td><a href="/urls/{{ url[0] }}">{{ url[1] }}</a></td>
+        <td><a href="{{ url_for('url_info', id=url[0]) }}">{{ url[1] }}</a></td>
         <td>
           {% if url[2] is not none %}
             {{ url[2].strftime('%Y-%m-%d') }}
