@@ -22,7 +22,7 @@ def urls_post():
     url = request.form.get('url')
     if not validate_url(url):
         flash('Некорректный URL', 'error')
-        return redirect(url_for('index'), 422)
+        return render_template('index.html'), 422
 
     parsed_url = urlparse(url)
     url = parsed_url.scheme + '://' + parsed_url.netloc
