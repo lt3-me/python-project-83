@@ -11,14 +11,12 @@ class URLsDatabaseController:
         def decorator(func):
             @wraps(func)
             def wrapper(self, *args, **kwargs):
-                conn = psycopg2.connect(self.database_url)
-                cursor = conn.cursor()
-                if with_conn_as_arg:
-                    result = func(self, conn, cursor, *args, **kwargs)
-                else:
-                    result = func(self, cursor, *args, **kwargs)
-                cursor.close()
-                conn.close()
+                with psycopg2.connect(self.database_url) as conn:
+                    with conn.cursor() as cursor:
+                        if with_conn_as_arg:
+                            result = func(self, conn, cursor, *args, **kwargs)
+                        else:
+                            result = func(self, cursor, *args, **kwargs)
                 return result
             return wrapper
         return decorator
