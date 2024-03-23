@@ -6,8 +6,6 @@ def validate_url(url):
         if validators.url(url) is True:
             return True
         else:
-            print('Validation Failure')
             return False
     else:
-        print(f'URL {url} is too long')
         return False
