@@ -20,8 +20,12 @@ def index():
 @app.post('/urls')
 def urls_post():
     url = request.form.get('url')
-    if not validate_url(url):
-        flash('Некорректный URL', 'error')
+    errors = validate_url(url)
+    if errors:
+        if 'validate_error' in errors:
+            flash(errors['validate_error'], 'error')
+        elif 'length_error' in errors:
+            flash(errors['length_error'], 'error')
         return render_template('index.html'), 422
 
     parsed_url = urlparse(url)
