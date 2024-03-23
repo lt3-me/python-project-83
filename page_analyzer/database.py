@@ -33,8 +33,28 @@ class URLsDatabaseController:
         return url_data
 
     @_with_database_connection()
-    def get_all_urls(self, cursor):
-        cursor.execute("SELECT * FROM urls")
+    def get_all_urls_with_latest_check_time_and_result(self, cursor):
+        cursor.execute(
+            "WITH latest_checks AS ( \
+            SELECT uc.url_id AS url_id, \
+            uc.created_at AS latest_check, \
+            uc.status_code AS status_code \
+            FROM url_checks AS uc \
+            JOIN ( \
+            SELECT url_id, \
+            MAX(created_at) AS latest_created_at \
+            FROM url_checks \
+            GROUP BY url_id \
+            ) AS latest \
+            ON uc.url_id = latest.url_id \
+            AND uc.created_at = latest.latest_created_at) \
+            SELECT urls.id, urls.name, \
+            latest_checks.latest_check, \
+            latest_checks.status_code \
+            FROM urls \
+            LEFT JOIN latest_checks \
+            ON urls.id = latest_checks.url_id \
+            ORDER BY latest_check DESC")
         urls_data = cursor.fetchall()
         return urls_data
 

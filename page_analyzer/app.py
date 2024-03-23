@@ -33,7 +33,8 @@ def urls():
             flash('Страница уже существует', 'info')
         return redirect(url_for('url_info', id=id))
     else:
-        return render_template('urls/index.html')
+        urls_data = db.get_all_urls_with_latest_check_time_and_result()
+        return render_template('urls/index.html', urls_data=urls_data)
 
 
 @app.route('/urls/<int:id>', methods=['GET'])
@@ -54,3 +55,8 @@ def check_url(id):
     elif status == 'success':
         flash('Страница успешно добавлена', 'success')
     return redirect(url_for('url_info', id=id))
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404

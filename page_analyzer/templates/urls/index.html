@@ -13,12 +13,20 @@
       </tr>
     </thead>
     <tbody>
-      {% for _ in range(4) %}
+      {% for url in urls_data %}
       <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td>{{ url[0] }}</td>
+        <td><a href="/urls/{{ url[0] }}">{{ url[1] }}</a></td>
+        <td>
+          {% if url[2] is not none %}
+            {{ url[2].strftime('%Y-%m-%d') }}
+          {% endif %}
+        </td>
+        <td>
+          {% if url[3] is not none %}
+            {{ url[3] }}
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
