@@ -8,16 +8,13 @@ class URLsDatabaseController:
     def __init__(self, database_url):
         self.database_url = database_url
 
-    def _with_database_connection(*, with_conn_as_arg=False):
+    def _with_database_connection():
         def decorator(func):
             @wraps(func)
             def wrapper(self, *args, **kwargs):
                 with psycopg2.connect(self.database_url) as conn:
                     with conn.cursor() as cursor:
-                        if with_conn_as_arg:
-                            result = func(self, conn, cursor, *args, **kwargs)
-                        else:
-                            result = func(self, cursor, *args, **kwargs)
+                        result = func(self, cursor, *args, **kwargs)
                 return result
             return wrapper
         return decorator
@@ -62,53 +59,55 @@ class URLsDatabaseController:
         url_checks = cursor.fetchall()
         return url_checks
 
-    @_with_database_connection(with_conn_as_arg=True)
-    def try_check_url_by_id(self, conn, cursor, id):
-        url_id, url, _ = self.get_url_by_id(id)
-        try:
-            page_data = check_url(url)
-        except requests.exceptions.RequestException:
-            return 'request_error'
-        try:
-            status, h1, title, desc = page_data.values()
-            cursor.execute(
-                "INSERT INTO url_checks \
-                (url_id, status_code, h1, title, description) \
-                VALUES (%s, %s, %s, %s, %s)",
-                (url_id, status, h1, title, desc))
-            conn.commit()
-            return 'check_success'
-        except psycopg2.Error as e:
-            print(e.pgerror)
-            print(e.diag.message_primary)
-            return 'insert_error'
+    def try_check_url_by_id(self, id):
+        with psycopg2.connect(self.database_url) as conn:
+            with conn.cursor() as cursor:
+                url_id, url, _ = self.get_url_by_id(id)
+                try:
+                    page_data = check_url(url)
+                except requests.exceptions.RequestException:
+                    return 'request_error'
+                try:
+                    status, h1, title, desc = page_data.values()
+                    cursor.execute(
+                        "INSERT INTO url_checks \
+                        (url_id, status_code, h1, title, description) \
+                        VALUES (%s, %s, %s, %s, %s)",
+                        (url_id, status, h1, title, desc))
+                    conn.commit()
+                    return 'check_success'
+                except psycopg2.Error as e:
+                    print(e.pgerror)
+                    print(e.diag.message_primary)
+                    return 'insert_error'
 
-    @_with_database_connection(with_conn_as_arg=True)
-    def try_insert_url_in_urls(self, conn, cursor, url):
-        try:
-            cursor.execute(
-                "SELECT * FROM urls \
-                WHERE name = %s \
-                LIMIT 1", (url,))
-            entry = cursor.fetchone()
+    def try_insert_url_in_urls(self, url):
+        with psycopg2.connect(self.database_url) as conn:
+            with conn.cursor() as cursor:
+                try:
+                    cursor.execute(
+                        "SELECT * FROM urls \
+                        WHERE name = %s \
+                        LIMIT 1", (url,))
+                    entry = cursor.fetchone()
 
-            if not entry:
-                cursor.execute(
-                    "INSERT INTO urls (name) \
-                    VALUES (%s) \
-                    RETURNING id", (url,))
-                conn.commit()
-                id = cursor.fetchone()[0]
-                status = 'success'
-            else:
-                id = entry[0]
-                status = 'exists'
+                    if not entry:
+                        cursor.execute(
+                            "INSERT INTO urls (name) \
+                            VALUES (%s) \
+                            RETURNING id", (url,))
+                        conn.commit()
+                        id = cursor.fetchone()[0]
+                        status = 'success'
+                    else:
+                        id = entry[0]
+                        status = 'exists'
 
-        except psycopg2.Error:
-            print(psycopg2.Error)
-            conn.rollback()
-            id = None
-            status = 'insert_error'
+                except psycopg2.Error:
+                    print(psycopg2.Error)
+                    conn.rollback()
+                    id = None
+                    status = 'insert_error'
 
-        finally:
-            return (id, status)
+                finally:
+                    return (id, status)
