@@ -28,9 +28,7 @@ def urls_post():
             flash(errors['length_error'], 'error')
         return render_template('index.html'), 422
 
-    parsed_url = urlparse(url)
-    url = parsed_url.scheme + '://' + parsed_url.netloc
-
+    url = normalize_url(url)
     id, status = db.try_insert_url_in_urls(url)
     flash_response(status)
     return redirect(url_for('url_info', id=id))
@@ -73,3 +71,8 @@ def flash_response(status):
     if status in flash_responses:
         msg, type = flash_responses[status]
         flash(msg, type)
+
+
+def normalize_url(url):
+    parsed_url = urlparse(url)
+    return parsed_url.scheme + '://' + parsed_url.netloc
