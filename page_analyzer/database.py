@@ -1,5 +1,6 @@
 import psycopg2
 from functools import wraps
+import requests
 from .url_analysis import check_url
 
 
@@ -64,23 +65,23 @@ class URLsDatabaseController:
     @_with_database_connection(with_conn_as_arg=True)
     def try_check_url_by_id(self, conn, cursor, id):
         url_id, url, _ = self.get_url_by_id(id)
-        page_data = check_url(url)
-        if page_data:
-            try:
-                status, h1, title, desc = page_data.values()
-                cursor.execute(
-                    "INSERT INTO url_checks \
-                    (url_id, status_code, h1, title, description) \
-                    VALUES (%s, %s, %s, %s, %s)",
-                    (url_id, status, h1, title, desc))
-                conn.commit()
-                return 'check_success'
-            except psycopg2.Error as e:
-                print(e.pgerror)
-                print(e.diag.message_primary)
-                return 'insert_error'
-        else:
+        try:
+            page_data = check_url(url)
+        except requests.exceptions.RequestException:
             return 'request_error'
+        try:
+            status, h1, title, desc = page_data.values()
+            cursor.execute(
+                "INSERT INTO url_checks \
+                (url_id, status_code, h1, title, description) \
+                VALUES (%s, %s, %s, %s, %s)",
+                (url_id, status, h1, title, desc))
+            conn.commit()
+            return 'check_success'
+        except psycopg2.Error as e:
+            print(e.pgerror)
+            print(e.diag.message_primary)
+            return 'insert_error'
 
     @_with_database_connection(with_conn_as_arg=True)
     def try_insert_url_in_urls(self, conn, cursor, url):

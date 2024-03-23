@@ -3,18 +3,13 @@ from bs4 import BeautifulSoup
 
 
 def check_url(url):
-    try:
-        r = requests.get(url=url)
-        r.raise_for_status()
-        status_code = r.status_code
-        html_content = r.text
-        h1, title, desc = extract_elements_from_html(html_content)
-        return {'status_code': status_code, 'h1': h1,
-                'title': title, 'description': desc}
-    except requests.exceptions.HTTPError:
-        return None
-    except requests.exceptions.ConnectionError:
-        return None
+    r = requests.get(url=url)
+    r.raise_for_status()
+    status_code = r.status_code
+    html_content = r.text
+    h1, title, desc = extract_elements_from_html(html_content)
+    return {'status_code': status_code, 'h1': h1,
+            'title': title, 'description': desc}
 
 
 def extract_elements_from_html(html_content):
