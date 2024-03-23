@@ -40,8 +40,8 @@ def urls():
 
 @app.route('/urls/<int:id>', methods=['GET'])
 def url_info(id):
-    url_data = db.get_url_data_for_id(id)
-    url_checks = db.get_all_url_checks_for_url_id(id)
+    url_data = db.get_url_by_id(id)
+    url_checks = db.get_url_checks_by_url_id(id)
     return render_template(
         'urls/url_info.html', id=id, url_data=url_data, url_checks=url_checks)
 

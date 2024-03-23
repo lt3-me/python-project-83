@@ -22,7 +22,7 @@ class URLsDatabaseController:
         return decorator
 
     @_with_database_connection()
-    def get_url_data_for_id(self, cursor, id):
+    def get_url_by_id(self, cursor, id):
         cursor.execute(
             "SELECT * FROM urls \
             WHERE id = %s \
@@ -57,7 +57,7 @@ class URLsDatabaseController:
         return urls_data
 
     @_with_database_connection()
-    def get_all_url_checks_for_url_id(self, cursor, url_id):
+    def get_url_checks_by_url_id(self, cursor, url_id):
         cursor.execute(
             "SELECT * FROM url_checks \
             WHERE url_id = %s \
@@ -67,7 +67,7 @@ class URLsDatabaseController:
 
     @_with_database_connection(with_conn_as_arg=True)
     def try_check_url_by_id(self, conn, cursor, id):
-        url_id, url, _ = self.get_url_data_for_id(id)
+        url_id, url, _ = self.get_url_by_id(id)
         page_data = check_url(url)
         if page_data:
             try:
