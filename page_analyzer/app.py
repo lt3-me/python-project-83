@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 import os
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 from .validator import validate_url
 from .database import URLsDatabaseController
@@ -22,6 +23,9 @@ def urls_post():
     if not validate_url(url):
         flash('Некорректный URL', 'error')
         return redirect(url_for('index'))
+
+    parsed_url = urlparse(url)
+    url = parsed_url.scheme + '://' + parsed_url.netloc
 
     id, status = db.try_insert_url_in_urls(url)
     flash_response(status)
