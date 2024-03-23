@@ -73,16 +73,14 @@ class URLsDatabaseController:
         page_data = check_url(url)
         if page_data:
             try:
-                print(page_data)
                 status, h1, title, desc = page_data.values()
-                print(status)
                 cursor.execute(
                     "INSERT INTO url_checks \
                     (url_id, status_code, h1, title, description) \
                     VALUES (%s, %s, %s, %s, %s)",
                     (url_id, status, h1, title, desc))
                 conn.commit()
-                return 'success'
+                return 'check_success'
             except psycopg2.Error as e:
                 print(e.pgerror)
                 print(e.diag.message_primary)
@@ -115,7 +113,7 @@ class URLsDatabaseController:
             print(psycopg2.Error)
             conn.rollback()
             id = None
-            status = 'error'
+            status = 'insert_error'
 
         finally:
             return (id, status)

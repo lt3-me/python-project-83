@@ -16,25 +16,22 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/urls', methods=['POST', 'GET'])
-def urls():
-    if request.method == 'POST':
-        url = request.form.get('url')
-        if not validate_url(url):
-            flash('Некорректный URL', 'error')
-            return redirect(url_for('index'))
+@app.post('/urls')
+def urls_post():
+    url = request.form.get('url')
+    if not validate_url(url):
+        flash('Некорректный URL', 'error')
+        return redirect(url_for('index'))
 
-        id, status = db.try_insert_url_in_urls(url)
-        if status == 'error':
-            flash('Ошибка при добавлении в базу данных', 'error')
-        elif status == 'success':
-            flash('Страница успешно добавлена', 'success')
-        elif status == 'exists':
-            flash('Страница уже существует', 'info')
-        return redirect(url_for('url_info', id=id))
-    else:
-        urls_data = db.get_all_urls_with_latest_check_time_and_result()
-        return render_template('urls/index.html', urls_data=urls_data)
+    id, status = db.try_insert_url_in_urls(url)
+    flash_response(status)
+    return redirect(url_for('url_info', id=id))
+
+
+@app.get('/urls')
+def urls():
+    urls_data = db.get_all_urls_with_latest_check_time_and_result()
+    return render_template('urls/index.html', urls_data=urls_data)
 
 
 @app.route('/urls/<int:id>', methods=['GET'])
@@ -48,15 +45,23 @@ def url_info(id):
 @app.route('/urls/<int:id>/checks', methods=['POST'])
 def check_url(id):
     status = db.try_check_url_by_id(id)
-    if status == 'request_error':
-        flash('Ошибка при добавлении в базу данных', 'error')
-    elif status == 'insert_error':
-        flash('Ошибка при добавлении в базу данных', 'error')
-    elif status == 'success':
-        flash('Страница успешно добавлена', 'success')
+    flash_response(status)
     return redirect(url_for('url_info', id=id))
 
 
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template('404.html'), 404
+
+
+def flash_response(status):
+    flash_responses = {
+        'request_error': ('Произошла ошибка при проверке', 'error'),
+        'insert_error': ('Ошибка при добавлении в базу данных', 'error'),
+        'success': ('Страница успешно добавлена', 'success'),
+        'check_success': ('Страница успешно проверена', 'success'),
+        'exists': ('Страница уже существует', 'info')
+    }
+    if status in flash_responses:
+        msg, type = flash_responses[status]
+        flash(msg, type)
