@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 import os
+import requests
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 from .validator import validate_url
 from .database import URLsDatabaseController
+from . import url_analysis
 
 load_dotenv()
 app = Flask(__name__)
@@ -48,7 +50,14 @@ def url_info(id):
 
 @app.route('/urls/<int:id>/checks', methods=['POST'])
 def check_url(id):
-    status = db.try_check_url_by_id(id)
+    url_id, url, _ = db.get_url_by_id(id)
+    try:
+        page_data = url_analysis.check_url(url)
+    except requests.exceptions.RequestException:
+        status = 'request_error'
+    else:
+        status_code, h1, title, desc = page_data.values()
+        status = db.try_insert_page_check(url_id, status_code, h1, title, desc)
     flash_response(status)
     return redirect(url_for('url_info', id=id))
 
@@ -63,7 +72,7 @@ def flash_response(status):
         'request_error': ('Произошла ошибка при проверке', 'error'),
         'insert_error': ('Ошибка при добавлении в базу данных', 'error'),
         'success': ('Страница успешно добавлена', 'success'),
-        'check_success': ('Страница успешно проверена', 'success'),
+        'check_insert_success': ('Страница успешно проверена', 'success'),
         'exists': ('Страница уже существует', 'info')
     }
     if status in flash_responses:

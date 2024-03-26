@@ -1,7 +1,5 @@
 import psycopg2
 from functools import wraps
-import requests
-from .url_analysis import check_url
 
 
 class URLsDatabaseController:
@@ -59,23 +57,17 @@ class URLsDatabaseController:
         url_checks = cursor.fetchall()
         return url_checks
 
-    def try_check_url_by_id(self, id):
+    def try_insert_page_check(self, url_id, status, h1, title, desc):
         with psycopg2.connect(self.database_url) as conn:
             with conn.cursor() as cursor:
-                url_id, url, _ = self.get_url_by_id(id)
                 try:
-                    page_data = check_url(url)
-                except requests.exceptions.RequestException:
-                    return 'request_error'
-                try:
-                    status, h1, title, desc = page_data.values()
                     cursor.execute(
                         "INSERT INTO url_checks \
                         (url_id, status_code, h1, title, description) \
                         VALUES (%s, %s, %s, %s, %s)",
                         (url_id, status, h1, title, desc))
                     conn.commit()
-                    return 'check_success'
+                    return 'check_insert_success'
                 except psycopg2.Error as e:
                     print(e.pgerror)
                     print(e.diag.message_primary)
