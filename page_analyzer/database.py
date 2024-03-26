@@ -29,24 +29,45 @@ class URLsDatabaseController:
     @_with_database_connection()
     def get_all_urls_with_latest_check_time_and_result(self, cursor):
         cursor.execute(
-            "SELECT urls.id, \
+            "SELECT DISTINCT urls.id, \
                     urls.name, \
-                    latest_checks.latest_check, \
                     uc.status_code \
             FROM urls \
-            LEFT JOIN ( \
-                SELECT \
-                    uc.url_id, \
-                    MAX(uc.created_at) AS latest_check \
-                FROM url_checks AS uc \
-                GROUP BY uc.url_id \
-            ) AS latest_checks \
-            ON urls.id = latest_checks.url_id \
-            LEFT JOIN url_checks AS uc ON latest_checks.url_id = uc.url_id \
-            AND latest_checks.latest_check = uc.created_at \
-            ORDER BY latest_checks.latest_check DESC;")
+            LEFT JOIN url_checks AS uc ON urls.id = uc.url_id \
+            ORDER BY urls.id;"
+        )
         urls_data = cursor.fetchall()
-        return urls_data
+
+        cursor.execute(
+            "SELECT \
+                uc.url_id, \
+                MAX(uc.created_at) AS latest_check \
+            FROM url_checks AS uc \
+            GROUP BY uc.url_id \
+            ORDER BY latest_check DESC;"
+            )
+        latest_check_times = cursor.fetchall()
+
+        urls_with_latest_check = []
+
+        for url_data in urls_data:
+            url_id = url_data[0]
+            name = url_data[1]
+            status_code = url_data[2]
+            latest_check = None
+            for check_time in latest_check_times:
+                if check_time[0] == url_id:
+                    latest_check = check_time[1]
+                    break
+            urls_with_latest_check.append(
+                (url_id, name, latest_check, status_code))
+
+        urls_with_latest_check = list(sorted(
+            urls_with_latest_check,
+            key=lambda x: (x[2] is None, x[2]),
+            reverse=True))
+
+        return urls_with_latest_check
 
     @_with_database_connection()
     def get_url_checks_by_url_id(self, cursor, url_id):
