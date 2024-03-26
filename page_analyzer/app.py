@@ -29,7 +29,18 @@ def urls_post():
         return render_template('index.html'), 422
 
     url = normalize_url(url)
-    id, status = db.try_insert_url_in_urls(url)
+    try:
+        url_id = db.get_url_id_by_url(url)
+        if url_id is None:
+            id = db.try_insert_url_in_urls(url)
+            status = 'success'
+        else:
+            id = url_id
+            status = 'exists'
+    except ValueError:
+        flash_response('insert_error')
+        return render_template('index.html'), 422
+
     flash_response(status)
     return redirect(url_for('url_info', id=id))
 
@@ -58,10 +69,14 @@ def check_url(id):
         html_content = r.text
         h1, title, desc = extract_elements_from_html(html_content)
     except requests.exceptions.RequestException:
-        status = 'request_error'
+        flash_response('request_error')
     else:
-        status = db.try_insert_page_check(url_id, status_code, h1, title, desc)
-    flash_response(status)
+        try:
+            db.try_insert_page_check(url_id, status_code, h1, title, desc)
+            flash_response('check_insert_success')
+        except ValueError:
+            flash_response('insert_error')
+
     return redirect(url_for('url_info', id=id))
 
 

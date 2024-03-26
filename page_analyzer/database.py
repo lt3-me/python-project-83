@@ -78,6 +78,18 @@ class URLsDatabaseController:
         url_checks = cursor.fetchall()
         return url_checks
 
+    @_with_database_connection()
+    def get_url_id_by_url(self, cursor, url):
+        cursor.execute(
+                "SELECT * FROM urls \
+                WHERE name = %s \
+                LIMIT 1", (url,))
+        entry = cursor.fetchone()
+        if entry:
+            return entry[0]
+
+        return None
+
     def try_insert_page_check(self, url_id, status, h1, title, desc):
         with psycopg2.connect(self.database_url) as conn:
             with conn.cursor() as cursor:
@@ -88,39 +100,23 @@ class URLsDatabaseController:
                         VALUES (%s, %s, %s, %s, %s)",
                         (url_id, status, h1, title, desc))
                     conn.commit()
-                    return 'check_insert_success'
-                except psycopg2.Error as e:
-                    print(e.pgerror)
-                    print(e.diag.message_primary)
-                    return 'insert_error'
+
+                except psycopg2.Error:
+                    conn.rollback()
+                    raise ValueError
 
     def try_insert_url_in_urls(self, url):
         with psycopg2.connect(self.database_url) as conn:
             with conn.cursor() as cursor:
                 try:
                     cursor.execute(
-                        "SELECT * FROM urls \
-                        WHERE name = %s \
-                        LIMIT 1", (url,))
-                    entry = cursor.fetchone()
-
-                    if not entry:
-                        cursor.execute(
-                            "INSERT INTO urls (name) \
-                            VALUES (%s) \
-                            RETURNING id", (url,))
-                        conn.commit()
-                        id = cursor.fetchone()[0]
-                        status = 'success'
-                    else:
-                        id = entry[0]
-                        status = 'exists'
+                        "INSERT INTO urls (name) \
+                        VALUES (%s) \
+                        RETURNING id", (url,))
+                    conn.commit()
+                    id = cursor.fetchone()[0]
+                    return id
 
                 except psycopg2.Error:
-                    print(psycopg2.Error)
                     conn.rollback()
-                    id = None
-                    status = 'insert_error'
-
-                finally:
-                    return (id, status)
+                    raise ValueError
