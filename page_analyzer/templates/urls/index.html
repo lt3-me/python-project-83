@@ -15,16 +15,16 @@
     <tbody>
       {% for url in urls_data %}
       <tr>
-        <td>{{ url[0] }}</td>
-        <td><a href="{{ url_for('url_info', id=url[0]) }}">{{ url[1] }}</a></td>
+        <td>{{ url['id'] }}</td>
+        <td><a href="{{ url_for('url_info', id=url['id']) }}">{{ url['name'] }}</a></td>
         <td>
-          {% if url[2] is not none %}
-            {{ url[2].strftime('%Y-%m-%d') }}
+          {% if url['latest_check'] is not none %}
+            {{ url['latest_check'].strftime('%Y-%m-%d') }}
           {% endif %}
         </td>
         <td>
-          {% if url[3] is not none %}
-            {{ url[3] }}
+          {% if url['status_code'] is not none %}
+            {{ url['status_code'] }}
           {% endif %}
         </td>
       </tr>
