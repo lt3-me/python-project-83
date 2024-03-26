@@ -47,8 +47,7 @@ class URLsDatabaseController:
                 MAX(uc.created_at) AS latest_check \
             FROM url_checks AS uc \
             GROUP BY uc.url_id \
-            ORDER BY latest_check DESC;"
-            )
+            ORDER BY latest_check DESC;")
         latest_check_times = cursor.fetchall()
 
         urls_with_latest_check = []
@@ -86,9 +85,9 @@ class URLsDatabaseController:
     @_with_database_connection()
     def get_url_id_by_url(self, cursor, url):
         cursor.execute(
-                "SELECT * FROM urls \
-                WHERE name = %s \
-                LIMIT 1", (url,))
+            "SELECT * FROM urls \
+            WHERE name = %s \
+            LIMIT 1", (url,))
         entry = cursor.fetchone()
         if entry:
             return entry[0]
