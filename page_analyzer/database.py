@@ -95,7 +95,7 @@ class URLsDatabaseController:
 
         return None
 
-    def try_insert_page_check(self, url_id, status, h1, title, desc):
+    def insert_page_check(self, url_id, status, h1, title, desc):
         with psycopg2.connect(self.database_url) as conn:
             with conn.cursor() as cursor:
                 try:
@@ -110,7 +110,7 @@ class URLsDatabaseController:
                     conn.rollback()
                     raise ValueError
 
-    def try_insert_url_in_urls(self, url):
+    def insert_url_in_urls(self, url):
         with psycopg2.connect(self.database_url) as conn:
             with conn.cursor() as cursor:
                 try:

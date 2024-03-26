@@ -32,7 +32,7 @@ def urls_post():
     try:
         url_id = db.get_url_id_by_url(url)
         if url_id is None:
-            id = db.try_insert_url_in_urls(url)
+            id = db.insert_url_in_urls(url)
             status = 'url_insert_success'
         else:
             id = url_id
@@ -72,7 +72,7 @@ def check_url(id):
         flash_response('request_error')
     else:
         try:
-            db.try_insert_page_check(url_id, status_code, h1, title, desc)
+            db.insert_page_check(url_id, status_code, h1, title, desc)
             flash_response('check_insert_success')
         except ValueError:
             flash_response('insert_error')
