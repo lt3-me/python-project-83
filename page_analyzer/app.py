@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from .validator import validate_url
 from .database import URLsDatabaseController
-from . import url_analysis
+from .url_analysis import extract_elements_from_html
 
 load_dotenv()
 app = Flask(__name__)
@@ -52,11 +52,14 @@ def url_info(id):
 def check_url(id):
     url_id, url, _ = db.get_url_by_id(id)
     try:
-        page_data = url_analysis.check_url(url)
+        r = requests.get(url=url)
+        r.raise_for_status()
+        status_code = r.status_code
+        html_content = r.text
+        h1, title, desc = extract_elements_from_html(html_content)
     except requests.exceptions.RequestException:
         status = 'request_error'
     else:
-        status_code, h1, title, desc = page_data.values()
         status = db.try_insert_page_check(url_id, status_code, h1, title, desc)
     flash_response(status)
     return redirect(url_for('url_info', id=id))
