@@ -33,10 +33,10 @@ def urls_post():
         url_id = db.get_url_id_by_url(url)
         if url_id is None:
             id = db.try_insert_url_in_urls(url)
-            status = 'success'
+            status = 'url_insert_success'
         else:
             id = url_id
-            status = 'exists'
+            status = 'url_exists'
     except ValueError:
         flash_response('insert_error')
         return render_template('index.html'), 422
@@ -89,9 +89,9 @@ def flash_response(status):
     flash_responses = {
         'request_error': ('Произошла ошибка при проверке', 'error'),
         'insert_error': ('Ошибка при добавлении в базу данных', 'error'),
-        'success': ('Страница успешно добавлена', 'success'),
+        'url_insert_success': ('Страница успешно добавлена', 'success'),
         'check_insert_success': ('Страница успешно проверена', 'success'),
-        'exists': ('Страница уже существует', 'info')
+        'url_exists': ('Страница уже существует', 'info')
     }
     if status in flash_responses:
         msg, type = flash_responses[status]
