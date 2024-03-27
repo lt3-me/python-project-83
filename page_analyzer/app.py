@@ -39,7 +39,7 @@ def urls_post():
     try:
         url_id = get_or_insert_url(url)
         flash_response(
-            'url_insert_success' if url_id is None else 'url_exists')
+            'url_exists' if url_id is None else 'url_insert_success')
         return redirect(url_for('url_info', id=url_id))
     except ValueError:
         flash_response('insert_error')
