@@ -13,6 +13,14 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 db = URLsDatabaseController(DATABASE_URL)
 
+FLASH_RESPONSES = {
+    'request_error': ('Произошла ошибка при проверке', 'error'),
+    'insert_error': ('Ошибка при добавлении в базу данных', 'error'),
+    'url_insert_success': ('Страница успешно добавлена', 'success'),
+    'check_insert_success': ('Страница успешно проверена', 'success'),
+    'url_exists': ('Страница уже существует', 'info')
+}
+
 
 @app.route('/')
 def index():
@@ -86,15 +94,8 @@ def page_not_found(error):
 
 
 def flash_response(status):
-    flash_responses = {
-        'request_error': ('Произошла ошибка при проверке', 'error'),
-        'insert_error': ('Ошибка при добавлении в базу данных', 'error'),
-        'url_insert_success': ('Страница успешно добавлена', 'success'),
-        'check_insert_success': ('Страница успешно проверена', 'success'),
-        'url_exists': ('Страница уже существует', 'info')
-    }
-    if status in flash_responses:
-        msg, type = flash_responses[status]
+    if status in FLASH_RESPONSES:
+        msg, type = FLASH_RESPONSES[status]
         flash(msg, type)
 
 
