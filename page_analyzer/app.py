@@ -32,25 +32,25 @@ def urls_post():
     url = request.form.get('url')
     errors = validate_url(url)
     if errors:
-        for error in errors:
-            flash(error, 'error')
+        flash_all_errors(errors)
         return render_template('index.html'), 422
 
     url = normalize_url(url)
     try:
-        url_id = db.get_url_id_by_url(url)
-        if url_id is None:
-            id = db.insert_url_in_urls(url)
-            status = 'url_insert_success'
-        else:
-            id = url_id
-            status = 'url_exists'
+        url_id = get_or_insert_url(url)
+        flash_response(
+            'url_insert_success' if url_id is None else 'url_exists')
+        return redirect(url_for('url_info', id=url_id))
     except ValueError:
         flash_response('insert_error')
         return render_template('index.html'), 422
 
-    flash_response(status)
-    return redirect(url_for('url_info', id=id))
+
+def get_or_insert_url(url):
+    url_id = db.get_url_id_by_url(url)
+    if url_id is None:
+        return db.insert_url_in_urls(url)
+    return url_id
 
 
 @app.get('/urls')
@@ -80,7 +80,7 @@ def check_url(id):
         flash_response('request_error')
     else:
         try:
-            db.insert_page_check(url_id, status_code, h1, title, desc)
+            db.insert_page_check((url_id, status_code, h1, title, desc))
             flash_response('check_insert_success')
         except ValueError:
             flash_response('insert_error')
@@ -97,6 +97,11 @@ def flash_response(status):
     if status in FLASH_RESPONSES:
         msg, type = FLASH_RESPONSES[status]
         flash(msg, type)
+
+
+def flash_all_errors(errors):
+    for error in errors:
+        flash(error, 'error')
 
 
 def normalize_url(url):

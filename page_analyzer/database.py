@@ -52,19 +52,17 @@ class URLsDatabaseController:
 
         urls_with_latest_check = []
 
+        latest_check_map = {check_time['url_id']: check_time['latest_check']
+                            for check_time in latest_check_times}
+
         for url_data in urls_data:
             url_id = url_data['id']
             name = url_data['name']
             status_code = url_data['status_code']
-            latest_check = None
-            for check_time in latest_check_times:
-                if check_time['url_id'] == url_id:
-                    latest_check = check_time['latest_check']
-                    break
+            latest_check = latest_check_map.get(url_id, None)
             urls_with_latest_check.append(
-                ({'id': url_id, 'name': name,
-                    'latest_check': latest_check,
-                    'status_code': status_code}))
+                {'id': url_id, 'name': name,
+                    'latest_check': latest_check, 'status_code': status_code})
 
         urls_with_latest_check = list(sorted(
             urls_with_latest_check,
@@ -94,7 +92,8 @@ class URLsDatabaseController:
 
         return None
 
-    def insert_page_check(self, url_id, status, h1, title, desc):
+    def insert_page_check(self, check_data):
+        url_id, status, h1, title, desc = check_data
         with psycopg2.connect(self.database_url) as conn:
             with conn.cursor() as cursor:
                 try:
