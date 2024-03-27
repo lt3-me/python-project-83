@@ -37,16 +37,20 @@ def urls_post():
 
     url = normalize_url(url)
     try:
-        url_id = get_or_insert_url(url)
-        flash_response(
-            'url_exists' if url_id is None else 'url_insert_success')
+        url_id = db.get_url_id_by_url(url)
+        if url_id is None:
+            url_id = db.insert_url_in_urls(url)
+            flash_response('url_insert_success')
+        else:
+            flash_response('url_exists')
+
         return redirect(url_for('url_info', id=url_id))
     except ValueError:
         flash_response('insert_error')
         return render_template('index.html'), 422
 
 
-def get_or_insert_url(url):
+def get_id_or_insert_url(url):
     url_id = db.get_url_id_by_url(url)
     if url_id is None:
         return db.insert_url_in_urls(url)
