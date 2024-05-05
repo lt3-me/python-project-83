@@ -100,8 +100,8 @@ class URLsDatabaseController:
     def insert_page_check(self, check_data):
         url_id, status, h1, title, desc = check_data
         with psycopg2.connect(self.database_url) as conn:
-            with conn.cursor() as cursor:
-                try:
+            try:
+                with conn.cursor() as cursor:
                     cursor.execute(
                         "INSERT INTO url_checks \
                         (url_id, status_code, h1, title, description) \
@@ -109,14 +109,14 @@ class URLsDatabaseController:
                         (url_id, status, h1, title, desc))
                     conn.commit()
 
-                except psycopg2.Error:
-                    conn.rollback()
-                    raise ValueError
+            except psycopg2.Error as e:
+                conn.rollback()
+                raise e
 
     def insert_url_in_urls(self, url):
         with psycopg2.connect(self.database_url) as conn:
-            with conn.cursor() as cursor:
-                try:
+            try:
+                with conn.cursor() as cursor:
                     cursor.execute(
                         "INSERT INTO urls (name) \
                         VALUES (%s) \
@@ -125,6 +125,6 @@ class URLsDatabaseController:
                     id = cursor.fetchone()[0]
                     return id
 
-                except psycopg2.Error:
-                    conn.rollback()
-                    raise ValueError
+            except psycopg2.Error as e:
+                conn.rollback()
+                raise e
