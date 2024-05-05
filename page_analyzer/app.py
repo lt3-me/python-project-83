@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from .validator import validate_url
 from .database import URLsDatabaseController
-from .url_analysis import extract_elements_from_html
+from .html_analysis import extract_elements_from_html
 
 load_dotenv()
 app = Flask(__name__)
