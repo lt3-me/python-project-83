@@ -3,7 +3,7 @@ import os
 import requests
 from urllib.parse import urlparse
 from dotenv import load_dotenv
-from .validator import validate_url
+from .urls import validate_url
 from .database import URLsDatabaseController
 from .html_analysis import extract_elements_from_html
 
