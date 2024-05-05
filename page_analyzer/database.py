@@ -3,7 +3,7 @@ from psycopg2.extras import DictCursor
 from functools import wraps
 
 
-class URLsDatabaseController:
+class URLsDatabase:
     def __init__(self, database_url):
         self.database_url = database_url
 

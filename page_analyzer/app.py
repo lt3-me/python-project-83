@@ -4,14 +4,14 @@ import requests
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 from .urls import validate_url
-from .database import URLsDatabaseController
+from .database import URLsDatabase
 from .html_analysis import extract_elements_from_html
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-db = URLsDatabaseController(DATABASE_URL)
+db = URLsDatabase(DATABASE_URL)
 
 FLASH_RESPONSES = {
     'request_error': ('Произошла ошибка при проверке', 'error'),
