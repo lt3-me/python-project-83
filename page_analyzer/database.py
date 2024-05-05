@@ -33,33 +33,38 @@ class URLsDatabaseController:
     def get_all_urls_with_latest_check_time_and_result(self, cursor):
         cursor.execute(
             "SELECT DISTINCT urls.id, \
-                    urls.name, \
-                    uc.status_code \
+                urls.name \
             FROM urls \
-            LEFT JOIN url_checks AS uc ON urls.id = uc.url_id \
             ORDER BY urls.id;"
         )
         urls_data = cursor.fetchall()
 
         cursor.execute(
-            "SELECT \
-                uc.url_id, \
-                MAX(uc.created_at) AS latest_check \
+            "SELECT uc.url_id, \
+                uc.status_code, \
+                uc.created_at AS latest_check \
             FROM url_checks AS uc \
-            GROUP BY uc.url_id \
+            JOIN (SELECT url_id, MAX(created_at) AS max_created_at \
+                    FROM url_checks \
+                    GROUP BY url_id) \
+                AS max_uc \
+            ON uc.url_id = max_uc.url_id \
+                AND uc.created_at = max_uc.max_created_at \
             ORDER BY latest_check DESC;")
-        latest_check_times = cursor.fetchall()
+        latest_checks = cursor.fetchall()
 
         urls_with_latest_check = []
 
-        latest_check_map = {check_time['url_id']: check_time['latest_check']
-                            for check_time in latest_check_times}
+        latest_check_map = {check_time['url_id']:
+                            (check_time['latest_check'],
+                                check_time['status_code'])
+                            for check_time in latest_checks}
 
         for url_data in urls_data:
             url_id = url_data['id']
             name = url_data['name']
-            status_code = url_data['status_code']
-            latest_check = latest_check_map.get(url_id, None)
+            latest_check, status_code = latest_check_map.get(
+                url_id, (None, None))
             urls_with_latest_check.append(
                 {'id': url_id, 'name': name,
                     'latest_check': latest_check, 'status_code': status_code})
