@@ -12,7 +12,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 db = URLsDatabase(DATABASE_URL)
 
-FLASH_RESPONSES = {
+FLASH_MESSAGES = {
     'request_error': ('Произошла ошибка при проверке', 'error'),
     'insert_error': ('Ошибка при добавлении в базу данных', 'error'),
     'url_insert_success': ('Страница успешно добавлена', 'success'),
@@ -91,6 +91,6 @@ def page_not_found(error):
 
 
 def flash_response(status):
-    if status in FLASH_RESPONSES:
-        msg, type = FLASH_RESPONSES[status]
+    if status in FLASH_MESSAGES:
+        msg, type = FLASH_MESSAGES[status]
         flash(msg, type)
