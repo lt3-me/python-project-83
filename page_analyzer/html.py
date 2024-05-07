@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 
 
-def extract_elements_from_html(html_content):
+def get_seo_elements(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     h1 = soup.find('h1')
     h1 = h1.text.strip() if h1 else None

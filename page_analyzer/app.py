@@ -4,7 +4,7 @@ import requests
 from dotenv import load_dotenv
 from .urls import validate_url, normalize_url
 from .database import URLsDatabase
-from .html import extract_elements_from_html
+from .html import get_seo_elements
 
 load_dotenv()
 app = Flask(__name__)
@@ -72,7 +72,7 @@ def check_url(id):
         r.raise_for_status()
         status_code = r.status_code
         html_content = r.text
-        h1, title, desc = extract_elements_from_html(html_content)
+        h1, title, desc = get_seo_elements(html_content)
     except requests.exceptions.RequestException:
         flash_response('request_error')
     else:
