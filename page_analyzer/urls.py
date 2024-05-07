@@ -1,4 +1,5 @@
 import validators
+from urllib.parse import urlparse
 
 
 def validate_url(url):
@@ -8,3 +9,8 @@ def validate_url(url):
     if not validators.url(url):
         errors.append('Некорректный URL')
     return errors
+
+
+def normalize_url(url):
+    parsed_url = urlparse(url)
+    return parsed_url.scheme + '://' + parsed_url.netloc

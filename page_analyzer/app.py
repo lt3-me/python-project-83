@@ -1,9 +1,8 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 import os
 import requests
-from urllib.parse import urlparse
 from dotenv import load_dotenv
-from .urls import validate_url
+from .urls import validate_url, normalize_url
 from .database import URLsDatabase
 from .html_analysis import extract_elements_from_html
 
@@ -95,8 +94,3 @@ def flash_response(status):
     if status in FLASH_RESPONSES:
         msg, type = FLASH_RESPONSES[status]
         flash(msg, type)
-
-
-def normalize_url(url):
-    parsed_url = urlparse(url)
-    return parsed_url.scheme + '://' + parsed_url.netloc
