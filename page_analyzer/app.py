@@ -4,7 +4,7 @@ import requests
 from dotenv import load_dotenv
 from .urls import validate_url, normalize_url
 from .database import URLsDatabase
-from .html_analysis import extract_elements_from_html
+from .html import extract_elements_from_html
 
 load_dotenv()
 app = Flask(__name__)
