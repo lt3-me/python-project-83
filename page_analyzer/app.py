@@ -32,7 +32,8 @@ def urls_post():
     url = request.form.get('url')
     errors = validate_url(url)
     if errors:
-        flash_all_errors(errors)
+        for error in errors:
+            flash(error, 'error')
         return render_template('index.html'), 422
 
     url = normalize_url(url)
@@ -101,11 +102,6 @@ def flash_response(status):
     if status in FLASH_RESPONSES:
         msg, type = FLASH_RESPONSES[status]
         flash(msg, type)
-
-
-def flash_all_errors(errors):
-    for error in errors:
-        flash(error, 'error')
 
 
 def normalize_url(url):
