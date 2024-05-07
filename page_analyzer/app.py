@@ -51,13 +51,6 @@ def urls_post():
         return render_template('index.html'), 422
 
 
-def get_id_or_insert_url(url):
-    url_id = db.get_url_id_by_url(url)
-    if url_id is None:
-        return db.insert_url_in_urls(url)
-    return url_id
-
-
 @app.get('/urls')
 def urls():
     urls_data = db.get_all_urls_with_latest_check_time_and_result()
