@@ -11,7 +11,7 @@ install:
 	poetry install
 
 dev:
-	poetry run flask --app page_analyzer:app run
+	poetry run flask --app page_analyzer:app run --port=8000
 
 PORT ?= 8000
 start:
