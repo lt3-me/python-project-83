@@ -10,8 +10,13 @@ def _with_database_connection(cursor_factory=None):
             with psycopg2.connect(
                     self.database_url,
                     cursor_factory=cursor_factory) as conn:
-                with conn.cursor() as cursor:
-                    result = func(self, cursor, *args, **kwargs)
+                try:
+                    with conn.cursor() as cursor:
+                        result = func(self, cursor, *args, **kwargs)
+                        conn.commit()
+                except psycopg2.Error as e:
+                    conn.rollback()
+                    raise e
             return result
         return wrapper
     return decorator
@@ -98,34 +103,22 @@ class Database:
 
         return None
 
-    def insert_page_check(self, check_data):
+    @_with_database_connection()
+    def insert_page_check(self, cursor, check_data):
         url_id, status, h1, title, desc = check_data
-        with psycopg2.connect(self.database_url) as conn:
-            try:
-                with conn.cursor() as cursor:
-                    cursor.execute(
-                        "INSERT INTO url_checks \
-                        (url_id, status_code, h1, title, description) \
-                        VALUES (%s, %s, %s, %s, %s)",
-                        (url_id, status, h1, title, desc))
-                    conn.commit()
+        cursor.execute(
+            "INSERT INTO url_checks \
+            (url_id, status_code, h1, title, description) \
+            VALUES (%s, %s, %s, %s, %s)",
+            (url_id, status, h1, title, desc))
+        cursor.connection.commit()
 
-            except psycopg2.Error as e:
-                conn.rollback()
-                raise e
-
-    def insert_url_in_urls(self, url):
-        with psycopg2.connect(self.database_url) as conn:
-            try:
-                with conn.cursor() as cursor:
-                    cursor.execute(
-                        "INSERT INTO urls (name) \
-                        VALUES (%s) \
-                        RETURNING id", (url,))
-                    conn.commit()
-                    id = cursor.fetchone()[0]
-                    return id
-
-            except psycopg2.Error as e:
-                conn.rollback()
-                raise e
+    @_with_database_connection()
+    def insert_url_in_urls(self, cursor, url):
+        cursor.execute(
+            "INSERT INTO urls (name) \
+            VALUES (%s) \
+            RETURNING id", (url,))
+        cursor.connection.commit()
+        id = cursor.fetchone()[0]
+        return id
