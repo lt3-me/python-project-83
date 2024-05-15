@@ -7,20 +7,20 @@ class URLsDatabase:
     def __init__(self, database_url):
         self.database_url = database_url
 
-    def _with_database_connection(dict_cursor=False):
+    def _with_database_connection(cursor_factory=None):
         def decorator(func):
             @wraps(func)
             def wrapper(self, *args, **kwargs):
-                cf = DictCursor if dict_cursor else None
                 with psycopg2.connect(
-                        self.database_url, cursor_factory=cf) as conn:
+                        self.database_url,
+                        cursor_factory=cursor_factory) as conn:
                     with conn.cursor() as cursor:
                         result = func(self, cursor, *args, **kwargs)
                 return result
             return wrapper
         return decorator
 
-    @_with_database_connection(dict_cursor=True)
+    @_with_database_connection(cursor_factory=DictCursor)
     def get_url_by_id(self, cursor, id):
         cursor.execute(
             "SELECT * FROM urls \
@@ -29,7 +29,7 @@ class URLsDatabase:
         url_data = cursor.fetchone()
         return url_data
 
-    @_with_database_connection(dict_cursor=True)
+    @_with_database_connection(cursor_factory=DictCursor)
     def get_all_urls_with_latest_check_time_and_result(self, cursor):
         cursor.execute(
             "SELECT DISTINCT urls.id, \
@@ -76,7 +76,7 @@ class URLsDatabase:
 
         return urls_with_latest_check
 
-    @_with_database_connection(dict_cursor=True)
+    @_with_database_connection(cursor_factory=DictCursor)
     def get_url_checks_by_url_id(self, cursor, url_id):
         cursor.execute(
             "SELECT * FROM url_checks \
