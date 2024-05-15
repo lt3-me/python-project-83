@@ -13,7 +13,6 @@ def _with_database_connection(cursor_factory=None):
                 try:
                     with conn.cursor() as cursor:
                         result = func(self, cursor, *args, **kwargs)
-                        conn.commit()
                 except psycopg2.Error as e:
                     conn.rollback()
                     raise e
