@@ -10,12 +10,12 @@ def _with_database_connection(cursor_factory=None):
             with psycopg2.connect(
                     self.database_url,
                     cursor_factory=cursor_factory) as conn:
-                try:
-                    with conn.cursor() as cursor:
+                with conn.cursor() as cursor:
+                    try:
                         result = func(self, cursor, *args, **kwargs)
-                except psycopg2.Error as e:
-                    conn.rollback()
-                    raise e
+                    except psycopg2.Error as e:
+                        conn.rollback()
+                        raise e
             return result
         return wrapper
     return decorator
