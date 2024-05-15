@@ -17,7 +17,7 @@ def _with_database_connection(cursor_factory=None):
     return decorator
 
 
-class URLsDatabase:
+class Database:
     def __init__(self, database_url):
         self.database_url = database_url
 

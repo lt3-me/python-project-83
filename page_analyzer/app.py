@@ -3,14 +3,14 @@ import os
 import requests
 from dotenv import load_dotenv
 from .urls import validate_url, normalize_url
-from .database import URLsDatabase
+from .database import Database
 from .html import get_seo_elements
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-db = URLsDatabase(DATABASE_URL)
+db = Database(DATABASE_URL)
 
 FLASH_MESSAGES = {
     'request_error': ('Произошла ошибка при проверке', 'error'),
