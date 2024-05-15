@@ -16,7 +16,7 @@ Page Analyzer is a website that analyzes specified pages for SEO suitability sim
 
 To access the project, please visit [Page Analyzer](https://hexlet-code-x1te.onrender.com/).
 
-### How to use
+### How to Use
 
 * On the main page of Page Analyzer, click on the input field.
 * Type or paste the URL of the webpage you want to analyze.
@@ -28,5 +28,15 @@ To access the project, please visit [Page Analyzer](https://hexlet-code-x1te.onr
 
 * Click on "Сайты" (Sites) in the navigation panel to open the table of all pages added for analysis.
 * The table displays the time and results of the last check for each page.
+
+### Quick Setup and Start on a Local Server Guide
+
+* Download this repository contents to your local machine.
+* Create file named ".env" in your project directory. Add `export DATABASE_URL=...` and `export SECRET_KEY=...` lines to this file, so you can set your environment variables.
+> :warning: DATABASE_URL is URL of your local database that will be used to store data. If you don't have an empty database, create one using PostgreSQL. Please, don't create any tables in this database manually before the next step.
+* Use command `make build` to install and create required tables in your database.
+> Alternatively, you can just directly start the "build.sh" script.
+* Use command `make start` to start Page Analyzer locally.
+> If you want to use any port other than 8000, you can change the variable in the Makefile.
 
 Feel free to explore and analyze webpages effectively using Page Analyzer!
